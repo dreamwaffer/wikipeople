@@ -232,5 +232,7 @@ cython_debug/
 # Project specific
 pics/
 data/
-
-# End of https://www.toptal.com/developers/gitignore/api/python,pycharm,venv
+subsetPics/
+images/
+stats/
+helperFiles/
