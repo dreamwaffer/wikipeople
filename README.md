@@ -27,9 +27,11 @@ export PYTHONPATH="${PYTHONPATH}:FullPathToTheScriptsDir"
 ```
 - Run processCPU.py for creating of database
 ```
-python scripts/create/processCPU.py
+cd scripts/create
+python processCPU.py
 ```
 - Run processGPU.py for face detection
 ```
+cd scripts/model
 python scripts/model/processGPU.py
 ```
