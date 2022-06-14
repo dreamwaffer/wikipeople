@@ -11,8 +11,24 @@ Only tested with Python 3.10, but everything above Python 3.9 should work. The d
 ```
 git clone https://github.com/dreamwaffer/wikipeople.git
 ```
-* Install all required packages
+- Install all required packages
+    - Only the CPU part - database creation without face detection:
+    ```
+    pip install -r requirementsCPU.txt
+    ```
+    - The whole process (CPU and GPU part):
+    ```
+    pip install -r requirements.txt
+    ```
+- Add modules to PYTHONPATH, most IDEs do this automatically, when using python in terminal run:
 ```
-pip install -r requirements.txt
+export PYTHONPATH="${PYTHONPATH}:FullPathToTheScriptsDir”
 ```
-* 
+- Run processCPU.py for creating of database
+```
+python processCPU.py
+```
+- Run processGPU.py for face detection
+```
+python processGPU.py
+```
