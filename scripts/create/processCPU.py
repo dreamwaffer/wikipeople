@@ -1,3 +1,5 @@
+import os
+
 import constants
 from create import ageFinder, corrector, merger, utils, transformer, setupCPU, sorter, labeler, downloader
 
@@ -12,6 +14,10 @@ def fullDataDownload():
     setupCPU.config()
     for year in range(constants.START_YEAR, constants.END_YEAR, constants.YEAR_STEP):
         print(f'Starting year: {year}!')
+        if os.path.isfile(f'{constants.DATA_DIRECTORY}/{year}.json'):
+            foundData = utils.readData(f'{constants.DATA_DIRECTORY}/{year}.json')
+        else:
+            foundData = {}
         data = downloader.getRawSparqlData(year, year + constants.YEAR_STEP)
         data = transformer.removeBrokenData(data)
         data = transformer.simplifySparqlData(data)
@@ -26,6 +32,7 @@ def fullDataDownload():
 
         data = sorter.orderData(data)
         data = sorter.changeOrderOfProperties(data)
+        data = merger.mergeDatasets([foundData, data])
         utils.saveData(data, f'{constants.DATA_DIRECTORY}/{year}.json')
 
         data = downloader.getPictures(data)
