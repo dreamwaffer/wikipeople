@@ -1,10 +1,14 @@
-from PIL.Image import Resampling
-from PIL import ExifTags
-from modules.process import *
+import logging
+import os
+from PIL import ExifTags, Image
+from tqdm import tqdm
+import random
 
+from constants import START_YEAR, END_YEAR, IMAGES_DIRECTORY, DATASET_DIRECTORY, DATA_DIRECTORY, IMAGES_SIZE, YEAR_STEP, \
+    BANNED_EXTENSIONS
+from create.merger import mergeDatasets
+from create.utils import readData, countProperty, saveData
 
-
-# TODO vytvorit skript na tvorbu datasetu a filtry
 
 def filterData(data, properties=None):
     if properties is None:
@@ -61,9 +65,9 @@ def filterDataset(data):
 
 
 def createImgDirAndCSV(data):
-    pictureInDir = constants.IMAGES_DIRECTORY
-    pictureOutDir = constants.DATASET_DIRECTORY
-    peopleCSV = f'{constants.DATASET_DIRECTORY}/people.csv'
+    pictureInDir = IMAGES_DIRECTORY
+    pictureOutDir = DATASET_DIRECTORY
+    peopleCSV = f'{DATASET_DIRECTORY}/people.csv'
     counter = 1
     result = {}
 
@@ -95,7 +99,8 @@ def transformImage(inLocation, outLocation, box, size):
                     img = img.rotate(90, expand=True)
 
             cropped = img.crop(box)
-            resized = cropped.resize((size, size), Resampling.LANCZOS)
+            resized = cropped.resize((size, size), Image.ANTIALIAS)
+            # resized = cropped.resize((size, size), Resampling.LANCZOS)
             resized.save(outLocation)
     except Exception as e:
         print(f'Corrupted picture {inLocation} - {e}')
@@ -110,12 +115,10 @@ def shuffleDataset(data):
 
 
 def creatingDatasetJob():
-    config()
-    step = 5
     data = {}
-    for year in range(constants.START_YEAR, constants.END_YEAR, step):
-        print(f'Starting years: {year}, {year + step}!')
-        partData = readData(f'{constants.DATA_DIRECTORY}/{year}_{year + step}.json')
+    for year in range(START_YEAR, END_YEAR, YEAR_STEP):
+        print(f'Starting years: {year}, {year + YEAR_STEP}!')
+        partData = readData(f'{DATA_DIRECTORY}/{year}_{year + YEAR_STEP}.json')
         data = mergeDatasets([data, partData])
 
     print(len(data))
@@ -124,9 +127,66 @@ def creatingDatasetJob():
     data = shuffleDataset(data)
     print(len(data))
     countProperty(data, {'images': True})
-    saveData(data, f'{constants.DATASET_DIRECTORY}/people.json')
+    saveData(data, f'{DATASET_DIRECTORY}/people.json')
     # data = readData(f'{constants.DATA_DIRECTORY}/people.json')
     createImgDirAndCSV(data)
+
+
+def createDirsGender(data, property, classes, index):
+    stats = {item: 0 for item in classes}
+
+    for image in tqdm(data, desc=f'createDirs-{index}', miniters=int(len(data) / 100)):
+        extension = os.path.splitext(image['fileNameLocal'])[1]
+        if extension not in BANNED_EXTENSIONS:
+            if property in image:
+                # gender property is a list as some people can identify as multi-gender
+                # next line filters out people with different gender than male or female
+                image[property] = [x for x in image[property] if x in classes]
+                if len(image[property]) == 1:
+                    image[property] = image[property][0]
+                    transformImage(f'{IMAGES_DIRECTORY}/{image["fileNameLocal"]}',
+                                   f'{DATASET_DIRECTORY}/{image[property]}/{image["fileNameLocal"]}',
+                                   image['faces'][0]['box'], IMAGES_SIZE)
+                    stats[image[property]] += 1
+
+    return stats
+
+
+def createDirsGenderAge(data, classes, index):
+    # classes = ['male,10', 'female,10',
+    #            'male,20', 'female,20',
+    #            'male,30', 'female,30',
+    #            'male,40', 'female,40',
+    #            'male,50', 'female,50',
+    #            'male,60', 'female,60',
+    #            'male,70', 'female,70',
+    #            'male,80', 'female,80',
+    #            'male,90', 'female,90',
+    #            'male,100', 'female,100',
+    #           ]
+    stats = {item: 0 for item in classes}
+
+    for image in tqdm(data, desc=f'createDirs-{index}', miniters=int(len(data) / 100)):
+        extension = os.path.splitext(image['fileNameLocal'])[1]
+        if extension not in BANNED_EXTENSIONS:
+            if 'gender' in image and 'age' in image:
+                # gender property is a list as some people can identify as multi-gender
+                # next line filters out people with different gender than male or female
+                image['gender'] = [x for x in image['gender'] if x in ['male', 'female']]
+                # this check: 0 < image['age'] < 100 is already in the dataset, but I was not sure
+                # if I ran it with the last version, so just to be sure
+                if image['age'] is not None and 0 < image['age'] < 100 and len(image['gender']) == 1:
+                    image['gender'] = image['gender'][0]
+                    if image['age'] < 33: image['age'] = 'young'
+                    elif 33 <= image['age'] < 66: image['age'] = 'adult'
+                    elif 66 <= image['age'] < 100: image['age'] = 'old'
+                    image['genderAge'] = f"{image['gender']},{image['age']}"
+                    transformImage(f'{IMAGES_DIRECTORY}/{image["fileNameLocal"]}',
+                                   f'{DATASET_DIRECTORY}/{image["genderAge"]}/{image["fileNameLocal"]}',
+                                   image['faces'][0]['box'], IMAGES_SIZE)
+                    stats[image['genderAge']] += 1
+
+    return stats
 
 
 def main():
@@ -134,4 +194,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    pass

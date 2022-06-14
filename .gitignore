@@ -230,9 +230,10 @@ cython_debug/
 #.idea/
 
 # Project specific
-pics/
 data/
-subsetPics/
+dataset/
 images/
 stats/
+logs/
 helperFiles/
+AgeDB/
