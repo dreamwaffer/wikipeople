@@ -10,6 +10,7 @@ Only tested with Python 3.10, but everything above Python 3.9 should work. The d
 * Clone this repo
 ```
 git clone https://github.com/dreamwaffer/wikipeople.git
+cd wikipeople/
 ```
 - Install all required packages
     - Only the CPU part - database creation without face detection:
@@ -22,13 +23,13 @@ git clone https://github.com/dreamwaffer/wikipeople.git
     ```
 - Add modules to PYTHONPATH, most IDEs do this automatically, when using python in terminal run:
 ```
-export PYTHONPATH="${PYTHONPATH}:FullPathToTheScriptsDir”
+export PYTHONPATH="${PYTHONPATH}:FullPathToTheScriptsDir"
 ```
 - Run processCPU.py for creating of database
 ```
-python processCPU.py
+python scripts/create/processCPU.py
 ```
 - Run processGPU.py for face detection
 ```
-python processGPU.py
+python scripts/model/processGPU.py
 ```
