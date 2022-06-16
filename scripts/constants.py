@@ -32,11 +32,11 @@ PERSON_PROPERTIES_FOR_TRAINING = ['gender', 'birthDate', 'deathDate', 'nationali
 IMAGE_PROPERTIES_FOR_TRAINING = ['age', 'faces', 'fileNameLocal']
 FACES_PROPERTIES_FOR_TRAINING = ['box', 'score']
 
-IMAGES_DIRECTORY = '../../images'
-DATA_DIRECTORY = '../../data'
-DATASET_DIRECTORY = '../../dataset'
-STATS_DIRECTORY = '../../stats'
-LOGS_DIRECTORY = '../../logs'
+IMAGES_DIRECTORY = '../images'
+DATA_DIRECTORY = '../data'
+DATASET_DIRECTORY = '../dataset'
+STATS_DIRECTORY = '../stats'
+LOGS_DIRECTORY = '../logs'
 AGE_DB_IMAGES_DIRECTORY = '../../AgeDB/AgeDB'
 
 ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.jpe', '.png', '.tif', '.tiff', '.webp', '.sr', '.ras', '.pbm', '.pgm', '.ppm',
@@ -46,8 +46,8 @@ BANNED_EXTENSIONS = ['.tif', '.tiff']
 FACE_BOX_MULTIPLIER = 1.5
 FACES_MIN_OCCURENCES = 100
 IMAGES_SIZE = 128
-START_YEAR = 1840
-END_YEAR = 1841
+START_YEAR = 1934
+END_YEAR = 1935
 YEAR_STEP = 1 # changing this is not recommended as it will most likely cause timeout on the API
 TRAIN, VAL, TEST = 0.6, 0.2, 0.2
 ONE_TEST_CONSTANT = 8000

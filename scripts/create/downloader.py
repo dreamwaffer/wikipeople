@@ -89,7 +89,7 @@ def getThumbnails(data, chunkSize=50):
 
     toProcess = []
     for index, person in enumerate(tqdm(data.values(), desc='getThumbnails', miniters=int(len(data) / 100))):
-        if len(toProcess) >= chunkSize or index >= len(data) - 1:
+        if len(toProcess) >= chunkSize:
             getThumbnailsForChunk(toProcess, data)
             toProcess = []
         if 'wikipediaTitle' in person:

@@ -90,11 +90,12 @@ def countProperty(data, properties={}, verbose=False):
     """
 
     stats = {property: 0 for property in properties}
+    stats['total'] = len(data)
 
     if isinstance(data, dict):
         data = data.values()
 
-    for person in tqdm(data, desc='countProperty', miniters=int(len(data) / 100)):
+    for person in data:
         for property in properties:
             if property in person:
                 # properties[property] is a boolean value passed to the method in dictionary
@@ -103,8 +104,6 @@ def countProperty(data, properties={}, verbose=False):
                         isinstance(person[property], dict) and \
                         properties[property]:
                     stats[property] += len(person[property])
-                    if len(person[property]) > 1:
-                        print(person['fileNameLocal'])
                 else:
                     stats[property] += 1
 
