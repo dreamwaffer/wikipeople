@@ -113,9 +113,3 @@ def countProperty(data, properties={}, verbose=False):
             print(f'{property}: {properties[property]} = {stats[property]}')
 
     return stats
-
-def addToDictionary(item, stats):
-    if item in stats:
-        stats[item] += 1
-    else:
-        stats[item] = 1

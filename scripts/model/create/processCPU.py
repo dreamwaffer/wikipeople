@@ -49,4 +49,18 @@ def fullDataDownload():
 
 
 if __name__ == '__main__':
-    fullDataDownload()
+    # fullDataDownload()
+    setupCPU.config()
+    for year in range(constants.START_YEAR, constants.END_YEAR, constants.YEAR_STEP):
+        print(f'Starting year: {year}!')
+        data = utils.readData(f'{constants.DATA_DIRECTORY}/{year}.json')
+        data = downloader.getPictures(data)
+        # data = corrector.removeBrokenImages(data)
+        utils.saveData(data, f'{constants.DATA_DIRECTORY}/{year}.json')
+
+    # setupCPU.config()
+    # for year in range(constants.START_YEAR, constants.END_YEAR, constants.YEAR_STEP):
+    #     print(f'Starting year: {year}!')
+    #     data = utils.readData(f'{constants.DATA_DIRECTORY}/{year}.json')
+    #     data = ageFinder.addAgeToImages(data)
+    #     utils.saveData(data, f'{constants.DATA_DIRECTORY}/{year}.json')

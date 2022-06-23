@@ -11,9 +11,6 @@ def detectFacesJob():
        Keyword arguments:
         None
     """
-    detected = 0
-    total = 0
-
     setupGPU.config()
     step = 1
     # TODO requestem stahnout proccessedImages z githubu
@@ -24,16 +21,10 @@ def detectFacesJob():
     for year in range(constants.START_YEAR, constants.END_YEAR, step):
         print(f'Starting year: {year}!')
         data = utils.readData(f'{constants.DATA_DIRECTORY}/{year}.json')
-        checker.checkFaces(data)
         processedImages, data = faceDetector.detectFacesWithHashing(data, processedImages)
-        val = checker.checkFaces(data)
-        detected += val[0]
-        total += val[1]
-
-
+        checker.checkFaces(data)
         utils.saveData(data, f'{constants.DATA_DIRECTORY}/{year}.json')
         utils.saveData(processedImages, f'{constants.DATA_DIRECTORY}/processedImages.json')
-    print(f"{detected}/{total}")
 
 
 if __name__ == '__main__':
