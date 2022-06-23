@@ -17,7 +17,7 @@ cd wikipeople/
     ```
     pip install -r requirementsCPU.txt
     ```
-    - The whole process (CPU and GPU part) - not working rn:
+    - The whole process (CPU and GPU part):
     ```
     pip install -r requirements.txt
     ```
@@ -32,6 +32,6 @@ python processCPU.py
 ```
 - Run processGPU.py for face detection
 ```
-cd scripts/model
-python scripts/model/processGPU.py
+cd scripts/create
+python processGPU.py
 ```
