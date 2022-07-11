@@ -7,6 +7,7 @@ kotrblu2@fel.cvut.cz
 
 ## How to use this project
 Only tested with Python 3.10, but everything above Python 3.9 should work. The dictionary union operator (|) is used couple of times.
+
 * Clone this repo
 ```
 git clone https://github.com/dreamwaffer/wikipeople.git
@@ -25,6 +26,7 @@ cd wikipeople/
 ```
 export PYTHONPATH="${PYTHONPATH}:FullPathToTheScriptsDir"
 ```
+- Before running the processCPU.py check your Pillow version. If it is anything below Pillow 9.1.0, than check line 53 in package create in module transformer.py.
 - Run processCPU.py for creating of database
 ```
 cd scripts/create
