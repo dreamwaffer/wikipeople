@@ -25,13 +25,14 @@ cd wikipeople/
 ```
 export PYTHONPATH="${PYTHONPATH}:FullPathToTheScriptsDir"
 ```
-- Before running the processCPU.py check your Pillow version. If it is anything below Pillow 9.1.0, than check line 53 in package create in module transformer.py.
+- Check your Pillow version. If it is anything below Pillow 9.1.0, than check line 53 in package create in module transformer.py.
+- Change your email in constants.HEADER, this header is used in all API calls and with proper header your request will not be banned.
 - Run processCPU.py for creating of database
 ```
 cd scripts/create
 python processCPU.py
 ```
-- Run processGPU.py for face detection
+- After processCPU is done run processGPU.py for face detection
 ```
 cd scripts/create
 python processGPU.py
