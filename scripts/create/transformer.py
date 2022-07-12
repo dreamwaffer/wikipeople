@@ -10,7 +10,7 @@ from tqdm import tqdm
 from urllib.parse import unquote
 
 from create.utils import addDistinctValues, getLastPartOfURL
-from create.merger import mergeAllDataForEvaluation
+from create import merger
 from constants import BROKEN_DATA, PERSON_PROPERTIES_FOR_TRAINING, IMAGE_PROPERTIES_FOR_TRAINING, GENERAL_DATE_OFFSET, \
     WIKIPEDIA_FILE_NAME_OFFSET, FILE_EXT_INDEX, WIKIDATA_ENTITY_OFFSET, BANNED_EXTENSIONS, \
     PERSON_PROPERTIES_FOR_EVALUATION, IMAGE_PROPERTIES_FOR_EVALUATION
@@ -244,7 +244,7 @@ def toEvaluationSample():
         data -- processed data from sparql endpoint
     """
 
-    data = mergeAllDataForEvaluation()
+    data = merger.mergeAllDataForEvaluation()
     print(len(data))
     data = random.sample(data, 1000)
     for image in data:

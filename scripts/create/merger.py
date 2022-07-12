@@ -10,8 +10,7 @@ from tqdm import tqdm
 
 from constants import START_YEAR, END_YEAR, DATA_DIRECTORY, YEAR_STEP, YEAR_OFFSET, PROPERTIES_TO_MERGE
 from create.utils import addDistinctValues, readData
-from create.transformer import toTrainingPeople, toImageData, toImagesBetween17And80, toImagesWithoutTif, \
-    toPeopleWithGender, toPeopleWithWikipedia, toImageDataEvaluation
+from create import transformer
 
 
 def mergeListOfValues(data):
@@ -133,10 +132,10 @@ def mergeAllDataForTrainingAge():
     for year in tqdm(range(START_YEAR, END_YEAR, YEAR_STEP),
                      desc='mergeAllDataForTrainingAge'):
         data = readData(f'{DATA_DIRECTORY}/{year}.json')
-        data = toTrainingPeople(data)
-        data = toImageData(data)
-        data = toImagesBetween17And80(data)
-        data = toImagesWithoutTif(data)
+        data = transformer.toTrainingPeople(data)
+        data = transformer.toImageData(data)
+        data = transformer.toImagesBetween17And80(data)
+        data = transformer.toImagesWithoutTif(data)
         allData.extend(data)
 
     return allData
@@ -154,10 +153,10 @@ def mergeAllDataForTrainingGender():
     for year in tqdm(range(START_YEAR, END_YEAR, YEAR_STEP),
                      desc='mergeAllDataForTrainingGender'):
         data = readData(f'{DATA_DIRECTORY}/{year}.json')
-        data = toTrainingPeople(data)
-        data = toPeopleWithGender(data)
-        data = toImageData(data)
-        data = toImagesWithoutTif(data)
+        data = transformer.toTrainingPeople(data)
+        data = transformer.toPeopleWithGender(data)
+        data = transformer.toImageData(data)
+        data = transformer.toImagesWithoutTif(data)
         allData.extend(data)
 
     return allData
@@ -175,9 +174,9 @@ def mergeAllDataForTraining():
     for year in tqdm(range(START_YEAR, END_YEAR, YEAR_STEP),
                      desc='mergeAllDataForTraining'):
         data = readData(f'{DATA_DIRECTORY}/{year}.json')
-        data = toTrainingPeople(data)
-        data = toImageData(data)
-        data = toImagesWithoutTif(data)
+        data = transformer.toTrainingPeople(data)
+        data = transformer.toImageData(data)
+        data = transformer.toImagesWithoutTif(data)
         allData.extend(data)
 
     return allData
@@ -195,9 +194,9 @@ def mergeAllDataForEvaluation():
     for year in tqdm(range(START_YEAR, END_YEAR, YEAR_STEP),
                      desc='mergeAllDataForEvaluation'):
         data = readData(f'{DATA_DIRECTORY}/{year}.json')
-        data = toTrainingPeople(data)
-        data = toPeopleWithWikipedia(data)
-        data = toImageDataEvaluation(data)
+        data = transformer.toTrainingPeople(data)
+        data = transformer.toPeopleWithWikipedia(data)
+        data = transformer.toImageDataEvaluation(data)
         allData.extend(data)
 
     return allData
