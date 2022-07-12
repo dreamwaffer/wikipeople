@@ -1,4 +1,5 @@
-# constants.py
+# Module name: Constants
+# Purpose: This module contains all the constants used in this project.
 
 # OFFSETS
 WIKIPEDIA_TITLE_OFFSET = 30  # base looks like this: https://en.wikipedia.org/wiki/
@@ -24,31 +25,38 @@ IMAGE_STRUCTURE = ['year', 'caption', 'date', 'exifDate', 'url', 'fileNameLocal'
                    'faces']
 FACE_STRUCTURE = ['box', 'score']
 
-
+# LISTS DEFINITIONS
 BROKEN_DATA = ['.well-known/genid']
 PROPERTIES_WITH_TAGS = ['gender', 'nationality', 'occupation']
 PROPERTIES_TO_MERGE = ['birthDate', 'deathDate']
 PERSON_PROPERTIES_FOR_TRAINING = ['gender', 'birthDate', 'deathDate', 'nationality', 'occupation']
-IMAGE_PROPERTIES_FOR_TRAINING = ['age', 'faces', 'fileNameLocal']
+IMAGE_PROPERTIES_FOR_TRAINING = ['age', 'faces', 'fileNameLocal', 'extension']
+PERSON_PROPERTIES_FOR_EVALUATION = ['birthDate', 'wikipediaTitle', 'wikidataID']
+IMAGE_PROPERTIES_FOR_EVALUATION = ['age', 'fileNameWiki']
 FACES_PROPERTIES_FOR_TRAINING = ['box', 'score']
+ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.jpe', '.png', '.tif', '.tiff', '.webp', '.sr', '.ras', '.pbm', '.pgm', '.ppm',
+                      '.jp2', '.dib']  # extensions that can undergo face detection
+BANNED_EXTENSIONS = ['.tif', '.tiff', '.webp']  # these extensions cannot be used by Pillow to tranform image
 
+# DIRECTORIES
 IMAGES_DIRECTORY = '../../images'
 DATA_DIRECTORY = '../../data'
 DATASET_DIRECTORY = '../../dataset'
 STATS_DIRECTORY = '../../stats'
 LOGS_DIRECTORY = '../../logs'
+RESULTS_DIRECTORY = '../../results'
 AGE_DB_IMAGES_DIRECTORY = '../../AgeDB/AgeDB'
 
-ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.jpe', '.png', '.tif', '.tiff', '.webp', '.sr', '.ras', '.pbm', '.pgm', '.ppm',
-                      '.jp2', '.dib']
-BANNED_EXTENSIONS = ['.tif', '.tiff']
+# DOWNLOAD CONSTANTS
+START_YEAR = 1840
+END_YEAR = 2015
+YEAR_STEP = 1  # changing this is not recommended as it will most likely cause timeout on the API
+MAX_URI_LENGTH = 5000
 
+# FACE DETECTION CONSTANTS
 FACE_BOX_MULTIPLIER = 1.5
 FACES_MIN_OCCURENCES = 100
-IMAGES_SIZE = 128
-START_YEAR = 2010
-END_YEAR = 2011
-YEAR_STEP = 1 # changing this is not recommended as it will most likely cause timeout on the API
+
+# MODEL TRAINING CONSTANTS
 TRAIN, VAL, TEST = 0.6, 0.2, 0.2
-ONE_TEST_CONSTANT = 8000
-MAX_URI_LENGTH = 5000
+IMAGES_SIZE = 128

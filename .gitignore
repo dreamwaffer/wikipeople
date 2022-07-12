@@ -235,5 +235,6 @@ dataset/
 images/
 stats/
 logs/
+results/
 helperFiles/
 AgeDB/

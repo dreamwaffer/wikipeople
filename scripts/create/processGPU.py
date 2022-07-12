@@ -1,44 +1,34 @@
-import checker
-import constants
-import downloader
-from create import utils, setupGPU, faceDetector
+# Module name: ProcessGPU
+# Purpose: This module contains main function for detecting faces in the dataset.
+
 import os
+
+from create.utils import readData, saveData
+from create.setupGPU import config
+from create.faceDetector import detectFaces
+from constants import DATA_DIRECTORY, START_YEAR, END_YEAR, YEAR_STEP
+
 
 def detectFacesJob():
     """This method detects all the faces in database. Checks for the processedImages.json file
-       and uses it, if found.
+       and uses it, if it is found.
 
        Keyword arguments:
         None
     """
-    detected = 0
-    total = 0
 
-    setupGPU.config()
-    step = 1
-    # TODO requestem stahnout proccessedImages z githubu
-    if os.path.exists(f'{constants.DATA_DIRECTORY}/processedImages.json'):
-        processedImages = utils.readData(f'{constants.DATA_DIRECTORY}/processedImages.json')
+    config()
+    if os.path.exists(f'{DATA_DIRECTORY}/processedImages.json'):
+        processedImages = readData(f'{DATA_DIRECTORY}/processedImages.json')
     else:
         processedImages = {}
-    for year in range(constants.START_YEAR, constants.END_YEAR, step):
+    for year in range(START_YEAR, END_YEAR, YEAR_STEP):
         print(f'Starting year: {year}!')
-        data = utils.readData(f'{constants.DATA_DIRECTORY}/{year}.json')
-        checker.checkFaces(data)
-        processedImages, data = faceDetector.detectFacesWithHashing(data, processedImages)
-        val = checker.checkFaces(data)
-        detected += val[0]
-        total += val[1]
-
-
-        utils.saveData(data, f'{constants.DATA_DIRECTORY}/{year}.json')
-        utils.saveData(processedImages, f'{constants.DATA_DIRECTORY}/processedImages.json')
-    print(f"{detected}/{total}")
+        data = readData(f'{DATA_DIRECTORY}/{year}.json')
+        processedImages, data = detectFaces(data, processedImages)
+        saveData(data, f'{DATA_DIRECTORY}/{year}.json')
+        saveData(processedImages, f'{DATA_DIRECTORY}/processedImages.json')
 
 
 if __name__ == '__main__':
     detectFacesJob()
-
-    # data = utils.readData(f'{constants.DATA_DIRECTORY}/short.json')
-    # processedImages, data = faceDetector.detectFacesWithHashing(data, {})
-    # utils.saveData(data, f'{constants.DATA_DIRECTORY}/short2.json')

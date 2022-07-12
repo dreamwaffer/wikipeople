@@ -1,12 +1,19 @@
-import random
+# Module name: Transformer
+# Purpose: This module contains functions for transforming data into various forms used for
+#          training, evaluating or processing.
 
-from tqdm import tqdm
-from urllib.parse import unquote
-from create import utils
+import random
 import os
 import copy
 
-from constants import BROKEN_DATA, PERSON_PROPERTIES_FOR_TRAINING, IMAGE_PROPERTIES_FOR_TRAINING, GENERAL_DATE_OFFSET, WIKIPEDIA_FILE_NAME_OFFSET, FILE_EXT_INDEX, WIKIDATA_ENTITY_OFFSET
+from tqdm import tqdm
+from urllib.parse import unquote
+
+from create.utils import addDistinctValues, getLastPartOfURL
+from create.merger import mergeAllDataForEvaluation
+from constants import BROKEN_DATA, PERSON_PROPERTIES_FOR_TRAINING, IMAGE_PROPERTIES_FOR_TRAINING, GENERAL_DATE_OFFSET, \
+    WIKIPEDIA_FILE_NAME_OFFSET, FILE_EXT_INDEX, WIKIDATA_ENTITY_OFFSET, BANNED_EXTENSIONS, \
+    PERSON_PROPERTIES_FOR_EVALUATION, IMAGE_PROPERTIES_FOR_EVALUATION
 
 
 def removeBrokenData(data):
@@ -31,8 +38,7 @@ def removeBrokenData(data):
 def simplifySparqlData(data):
     """This method simplifies raw data from sparql endpoint into more usable format,
        creates all necessary object properties or transform them.
-
-       Custom function, change this if you want to process data differently.
+       This is a custom function, change this if you want to process data differently.
 
         Keyword arguments:
         data -- raw data from sparql endpoint
@@ -54,11 +60,11 @@ def simplifySparqlData(data):
             }
         for key, value in record.items():
             if key in ['occupation', 'nationality', 'gender']:
-                simpRec[key] = [utils.getLastPartOfURL(value['value'])]
+                simpRec[key] = [getLastPartOfURL(value['value'])]
             if key in ['description', 'name']:
                 simpRec[key] = value['value']
             elif key == 'wikipediaTitle':
-                simpRec[key] = utils.getLastPartOfURL(value['value'])
+                simpRec[key] = getLastPartOfURL(value['value'])
             elif key == 'birthDate' or key == 'deathDate':
                 simpRec[key] = value['value'][:GENERAL_DATE_OFFSET]
             elif key == 'imageUrl':
@@ -84,8 +90,7 @@ def simplifySparqlData(data):
 def processSparqlData(data):
     """This method processes simplified data from sparql endpoint,
        checks for duplicities in RDF triplets and only save distinct values.
-
-       Custom function, change this if you want to process data differently.
+       This is a custom function, change this if you want to process data differently.
 
        Keyword arguments:
        data -- simplified data from sparql endpoint
@@ -97,7 +102,7 @@ def processSparqlData(data):
         wikidataID = person['wikidataID']
         if wikidataID in peopleDictionary:
             for key, value in person.items():
-                utils.addDistinctValues(key, value, peopleDictionary[wikidataID])
+                addDistinctValues(key, value, peopleDictionary[wikidataID])
         else:
             # having all pictures in a dictionary is better for processing even if there is just one
             if 'images' not in person:
@@ -107,42 +112,30 @@ def processSparqlData(data):
     return peopleDictionary
 
 
-# TODO: PROBABLY NOT NEEDED ANYMORE
-def addIndexToImageNames(data):
-    """This method adds indexes to local image file names (fileNameLocal),
-       it is needed because, some of the people have more pictures on wikidata
-       and the local names were originally just ther wikidata IDs.
+def toImageData(data):
+    """This method creates dataset, which is images oriented. This dataset is better usable for model training.
 
        Keyword arguments:
         data -- processed data from sparql endpoint
     """
 
-    for person in tqdm(data.values(), desc='addIndexToImageNames', miniters=int(len(data) / 100)):
-        if 'images' in person:
-            for index, image in enumerate(person['images'].values()):
-                name, extension = os.path.splitext(image["fileNameLocal"])
-                image['fileNameLocal'] = f'{name}_{index + 1}{extension}'
-    return data
-
-
-def toUsableImageData(data):
-    """This method creates smaller dataset, which contains only images usable for model training
-       (images with only one detected face)
-
-       Keyword arguments:
-        data -- processed data from sparql endpoint
-    """
     images = []
     for person in list(data.values()):
         info = {k: v for (k, v) in person.items() if k in PERSON_PROPERTIES_FOR_TRAINING}
         for image in list(person['images'].values()):
             imageObj = copy.deepcopy(info) | {k: v for (k, v) in image.items() if k in IMAGE_PROPERTIES_FOR_TRAINING}
-            if 'faces' in imageObj and len(imageObj['faces']) == 1:
-                images.append(imageObj)
+            images.append(imageObj)
 
     return images
 
+
 def toTrainingPeople(data):
+    """This method creates dataset, which contains only people used for training. This dataset is then returned.
+
+       Keyword arguments:
+        data -- processed data from sparql endpoint
+    """
+
     newData = copy.deepcopy(data)
     for wikidataID, person in list(newData.items()):
         for key, image in list(person['images'].items()):
@@ -155,7 +148,66 @@ def toTrainingPeople(data):
 
     return newData
 
+
+def toPeopleWithGender(data):
+    """This method creates dataset, which contains only people with exactly one gender value.
+
+       Keyword arguments:
+        data -- processed data from sparql endpoint
+    """
+
+    newData = copy.deepcopy(data)
+    for wikidataID, person in list(newData.items()):
+        if 'gender' not in person or len(person['gender']) > 1 or person['gender'][0] not in ['male', 'female']:
+            del newData[wikidataID]
+
+    return newData
+
+
+def toImagesBetween17And80(data):
+    """This method creates dataset, which contains only images with detected age between 17 and 80 inclusive.
+
+       Keyword arguments:
+        data -- processed data from sparql endpoint
+    """
+
+    newData = [image for image in data if image['age'] <= 80 and image['age'] >= 17]
+    return newData
+
+
+def toImagesWithoutTif(data):
+    """This method creates dataset, which contains only images without the .tif extension.
+
+       Keyword arguments:
+        data -- processed data from sparql endpoint
+    """
+
+    newData = [image for image in data if image['extension'] not in BANNED_EXTENSIONS]
+    return newData
+
+
+def toPeopleWithWikipedia(data):
+    """This method creates dataset, which contains only people that are associated with Wikipedia page.
+
+       Keyword arguments:
+        data -- processed data from sparql endpoint
+    """
+
+    newData = copy.deepcopy(data)
+    for wikidataID, person in list(newData.items()):
+        if 'wikipediaTitle' not in person:
+            del newData[wikidataID]
+
+    return newData
+
+
 def toPeopleWithAllProps(data):
+    """This method creates dataset, which contains only people with all the props.
+
+       Keyword arguments:
+        data -- processed data from sparql endpoint
+    """
+
     newData = copy.deepcopy(data)
     properties = ['name', 'description', 'gender', 'birthDate', 'deathDate', 'nationality', 'occupation']
     for wikidataID, person in list(newData.items()):
@@ -164,16 +216,44 @@ def toPeopleWithAllProps(data):
 
     return newData
 
-def toEvaluationSample(data):
-    randomSample = random.sample(data.items(), 200)
-    randomSample = {item[0]: item[1] for item in randomSample}
-    for person in list(randomSample.values()):
-        person['imageLink'] = f"https://commons.wikimedia.org/wiki/File:{list(person['images'].values())[0]['fileNameWiki']}"
-        person['wikipediaLink'] = f"https://en.wikipedia.org/wiki/{person['wikipediaTitle']}"
-        person['age'] = list(person['images'].values())[0]['age']
-        person['imageYear'] = None
-        del person['images']
-        del person['wikipediaTitle']
-        del person['wikidataID']
 
-    return randomSample
+def toImageDataEvaluation(data):
+    """This method creates smaller dataset, which contains only images usable for evaluation.
+
+       Keyword arguments:
+        data -- processed data from sparql endpoint
+    """
+
+    images = []
+    for person in list(data.values()):
+        info = {k: v for (k, v) in person.items() if k in PERSON_PROPERTIES_FOR_EVALUATION}
+        for image in list(person['images'].values()):
+            imageObj = copy.deepcopy(info) | {k: v for (k, v) in image.items() if k in IMAGE_PROPERTIES_FOR_EVALUATION}
+            images.append(imageObj)
+
+    return images
+
+
+def toEvaluationSample():
+    """This method creates evaluation sample. All the training data,
+       annotated images with exactly one face detected in them and age found, are put together.
+       These images are further filtered for related Wikipedia page. All images without a related
+       Wikipedia page are filtered out. From those 1000 are pseudorandomly chosen.
+
+       Keyword arguments:
+        data -- processed data from sparql endpoint
+    """
+
+    data = mergeAllDataForEvaluation()
+    print(len(data))
+    data = random.sample(data, 1000)
+    for image in data:
+        image['imageLink'] = f"https://commons.wikimedia.org/wiki/File:{image['fileNameWiki']}"
+        image['wikipediaLink'] = f"https://en.wikipedia.org/wiki/{image['wikipediaTitle']}"
+        image['wikidataLink'] = f"https://www.wikidata.org/wiki/{image['wikidataID']}"
+        image['imageYear'] = 0
+        del image['fileNameWiki']
+        del image['wikipediaTitle']
+        del image['wikidataID']
+
+    return data

@@ -1,9 +1,18 @@
-import json
+# Module name: ProcessCPU
+# Purpose: This module contains main function for creating the dataset.
+
 import os
 
-import constants
-import stats
-from create import ageFinder, corrector, merger, utils, transformer, setupCPU, sorter, labeler, downloader
+from create.ageFinder import addAgeToImages
+from create.corrector import removeBrokenImages
+from create.merger import mergeListOfValues, mergeDatasets
+from create.utils import readData, saveData
+from create.transformer import removeBrokenData, processSparqlData, simplifySparqlData
+from create.setupCPU import config
+from create.sorter import orderData, changeOrderOfProperties
+from create.labeler import labelTags
+from create.downloader import getRawSparqlData, getThumbnails, getMetadataAndLinks, getPictures
+from constants import START_YEAR, END_YEAR, YEAR_STEP, DATA_DIRECTORY
 
 
 def fullDataDownload():
@@ -13,39 +22,38 @@ def fullDataDownload():
        Keyword arguments:
         None
     """
-    allData = {}
-    setupCPU.config()
-    for year in range(constants.START_YEAR, constants.END_YEAR, constants.YEAR_STEP):
+
+    config()
+    for year in range(START_YEAR, END_YEAR, YEAR_STEP):
         print(f'Starting year: {year}!')
-        if os.path.isfile(f'{constants.DATA_DIRECTORY}/{year}.json'):
-            foundData = utils.readData(f'{constants.DATA_DIRECTORY}/{year}.json')
+        if os.path.isfile(f'{DATA_DIRECTORY}/{year}.json'):
+            foundData = readData(f'{DATA_DIRECTORY}/{year}.json')
         else:
             foundData = {}
-        data = downloader.getRawSparqlData(year, year + constants.YEAR_STEP)
-        data = transformer.removeBrokenData(data)
-        data = transformer.simplifySparqlData(data)
-        data = transformer.processSparqlData(data)
-        data = merger.mergeListOfValues(data)
+        data = getRawSparqlData(year, year + YEAR_STEP)
+        data = removeBrokenData(data)
+        data = simplifySparqlData(data)
+        data = processSparqlData(data)
+        data = mergeListOfValues(data)
 
-        data = labeler.labelTags(data)
-        data = downloader.getThumbnails(data)
-        data = downloader.getMetadataAndLinks(data)
+        data = labelTags(data)
+        data = getThumbnails(data)
+        data = getMetadataAndLinks(data)
 
-        data = ageFinder.addAgeToImages(data)
+        data = addAgeToImages(data)
 
-        data = sorter.orderData(data)
-        data = sorter.changeOrderOfProperties(data)
-        data = merger.mergeDatasets([foundData, data])
-        utils.saveData(data, f'{constants.DATA_DIRECTORY}/{year}.json')
+        data = orderData(data)
+        data = changeOrderOfProperties(data)
+        data = mergeDatasets([foundData, data])
+        data = mergeListOfValues(data)
+        saveData(data, f'{DATA_DIRECTORY}/{year}.json')
 
-        data = downloader.getPictures(data)
-        data = corrector.removeBrokenImages(data)
+        data = getPictures(data)
+        data = removeBrokenImages(data)
 
-        # probably useless, needs to be ordered after faces are added too
-        # careful about that as it can sort the box values too
-        data = sorter.orderData(data)
-        data = sorter.changeOrderOfProperties(data)
-        utils.saveData(data, f'{constants.DATA_DIRECTORY}/{year}.json')
+        data = orderData(data)
+        data = changeOrderOfProperties(data)
+        saveData(data, f'{DATA_DIRECTORY}/{year}.json')
 
 
 if __name__ == '__main__':

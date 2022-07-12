@@ -1,11 +1,15 @@
+# Module name: Utils
+# Purpose: This module contains functions that are used in multiple modules.
+
 import os
-from urllib.parse import urlparse, unquote
 import json
-from tqdm import tqdm
+
+from urllib.parse import urlparse, unquote
+
 
 def addDistinctValues(property, value, node):
-    """This method checks for duplicate values and only adds it once,
-       in case there are multiple unique values create a list for them
+    """This method checks for duplicate values in any structure (list, dict) and only adds it once.
+       In case there are multiple unique string values a list is created and values stored in it.
 
         Keyword arguments:
         property -- name of the property to be added
@@ -22,7 +26,6 @@ def addDistinctValues(property, value, node):
                 node[property] = [node[property], value]
         elif isinstance(value, list) and isinstance(node[property], list):
             node[property].extend(item for item in value if item not in node[property])
-            # node[property] = value + list(set(node[property]) - set(value))
         elif isinstance(value, str) and isinstance(node[property], list):
             if value not in node[property]:
                 node[property].append(value)
@@ -31,7 +34,7 @@ def addDistinctValues(property, value, node):
                 value.append(node[property])
         elif isinstance(node[property], dict):
             for k, v in value.items():
-                if k in node[property]:  # tento check je mozna zbytecny protoze uz je zahrnut v tom na radku 19, if property in node
+                if k in node[property]:
                     addDistinctValues(k, v, node[property])
                 else:
                     node[property][k] = v
@@ -42,16 +45,17 @@ def addDistinctValues(property, value, node):
 def getLastPartOfURL(url):
     """This method returns last part of passed URL, it can be either file, ID, basically anything behind the last slash,
        be aware of this methods limitation, if there is a special character like ? or ; in the last part of URL,
-       the method would not work properly and it is better to use custom string strip
+       the method would not work properly and it is better to use custom string strip.
 
         Keyword arguments:
         url -- desired url
     """
+
     return unquote(os.path.basename(urlparse(url).path))
 
 
 def saveData(data, file, indent=2):
-    """This method saves data to a file with a specific indent
+    """This method saves data to a file with a specific indent.
 
         Keyword arguments:
         data -- processed data from sparql endpoint
@@ -64,7 +68,7 @@ def saveData(data, file, indent=2):
 
 
 def readData(file):
-    """This method reads data from a file
+    """This method reads data from a file passed as an argument.
 
         Keyword arguments:
         file -- file and location to read data from
@@ -76,7 +80,7 @@ def readData(file):
 
 
 def countProperty(data, properties={}, verbose=False):
-    """This method does a basic statistics on data and counts desired properties
+    """This method does a basic statistics on data and counts desired properties.
 
         Keyword arguments:
         data -- processed data from sparql endpoint
@@ -85,8 +89,8 @@ def countProperty(data, properties={}, verbose=False):
                       False -- only count a number of occurences of property
                       eg: {'images': True} will count number of all images in data, adding the length of the list
                       in comparison to: {'deathDate': False} will only count number of deathDate is present in data.
-
                       NOTE: all properties with non-list values are percieved as False
+        verbose -- switch between verbose output (True) and nonverbose (False)
     """
 
     stats = {property: 0 for property in properties}
@@ -114,7 +118,17 @@ def countProperty(data, properties={}, verbose=False):
 
     return stats
 
+
 def addToDictionary(item, stats):
+    """This method adds item to a stats dictionary. This method is used in stats module for calculating
+       dataset attributes.
+
+        Keyword arguments:
+        data -- processed data from sparql endpoint
+        file -- file and location to save data to
+        indent -- number of spaces for nicer formatting of JSON (default: 2)
+    """
+
     if item in stats:
         stats[item] += 1
     else:

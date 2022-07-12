@@ -1,25 +1,32 @@
+# Module name: Downloader
+# Purpose: This module contains functions to download data that are used to build the dataset.
+#          Data comes from various APIs (Wikidata SPARQL API, EN Mediawiki API, Wikipedia Commons API).
+
 import hashlib
+import logging
+import os
+import requests
+
 from datetime import datetime
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 from urllib.parse import unquote
-import constants
-from create import utils
-import logging
-import os
-import requests
+
+from create.utils import addDistinctValues
+from constants import IMAGES_DIRECTORY, MWAPI_URL, SPARQL_URL, START_YEAR, HEADERS, FILE_EXT_INDEX, MAX_URI_LENGTH, \
+    FILE_TITLE_OFFSET
 
 
 def getRawSparqlData(fromYear=None, toYear=None):
     """This method gets data about all the people from wikidata between certain years.
 
         Keyword arguments:
-        fromYear -- beginning of the range (default 1840)
-        toYear -- end of the range (default 2015)
+        fromYear -- beginning of the range (default defined in constants module is set 1840)
+        toYear -- end of the range (default defined in constants module is set 2015)
     """
 
     if fromYear is None:
-        fromYear = constants.START_YEAR
+        fromYear = START_YEAR
     if toYear is None:
         toYear = datetime.now().year
 
@@ -60,8 +67,8 @@ def getRawSparqlData(fromYear=None, toYear=None):
             '''
             while not success:
                 try:
-                    r = session.get(url=constants.SPARQL_URL, params={'format': 'json', 'query': query},
-                                    headers=constants.HEADERS)
+                    r = session.get(url=SPARQL_URL, params={'format': 'json', 'query': query},
+                                    headers=HEADERS)
                     data.extend(r.json()['results']['bindings'])
                 except requests.exceptions.RequestException as e:
                     numOfErrors += 1
@@ -80,12 +87,13 @@ def getRawSparqlData(fromYear=None, toYear=None):
 
 
 def getThumbnails(data, chunkSize=50):
-    """This method adds thumbnail images to all people in dataset if there are any on the wikipedia,
-       the picture is only added if it is not in the set already (from wikidata or other source)
+    """This method adds thumbnail images to all people in the passed dataset if they have one on the Wikipedia page,
+       the picture is only added if it is not in the set already (from wikidata or other source).
 
         Keyword arguments:
         data -- processed data from sparql endpoint
-        chunkSize -- number of people that can be processed at once, limited by mediawiki API to 50 (default: 50)
+        chunkSize -- number of people that can be processed at once, limited by mediawiki API
+                     to 50 for standard user or 500 for user with additional rights (default: 50)
     """
 
     toProcess = []
@@ -103,12 +111,13 @@ def getThumbnails(data, chunkSize=50):
 
 
 def getThumbnailsForChunk(titles, people):
-    """This method fetches images for wikipedia titles passed in
+    """This method finds all thumbnail images for Wikipedia titles passed in and saves them in the dataset.
 
         Keyword arguments:
         titles -- list of wikipedia titles
         people -- processed data from sparql endpoint
     """
+
     # example:
     # https://en.wikipedia.org/w/api.php?action=query&titles=Ayn%20Rand&prop=pageprops&format=json&formatversion=2
 
@@ -119,17 +128,18 @@ def getThumbnailsForChunk(titles, people):
         'format': 'json',
         'formatversion': 2
     }
+
     with requests.Session() as session:
         titlesString = "|".join(titles)
         params['titles'] = titlesString
-        r = session.get(url=constants.MWAPI_URL, params=params, headers=constants.HEADERS)
+        r = session.get(url=MWAPI_URL, params=params, headers=HEADERS)
         r.raise_for_status()  # raises exception when not a 2xx response
         data = r.json()['query']['pages']
         for page in data:
             if 'pageprops' in page:
                 pageprops = page['pageprops']
                 # Necessary check, because some pictures can lack this link to wikidata
-                if 'wikibase-item' in pageprops:
+                if 'wikibase_item' in pageprops:
                     wikidataID = pageprops["wikibase_item"]
                     image = {
                         "caption": [],
@@ -142,24 +152,26 @@ def getThumbnailsForChunk(titles, people):
                         key = 'page_image_free'
                     if key is not None:
                         fileNameWiki = unquote(pageprops[key]).replace(" ", "_")
-                        image[
-                            'fileNameLocal'] = f'{wikidataID}{os.path.splitext(fileNameWiki)[constants.FILE_EXT_INDEX]}'
                         image['fileNameWiki'] = fileNameWiki
-                        utils.addDistinctValues(fileNameWiki, image, people[wikidataID]['images'])
+                        image[
+                            'extension'] = f'{os.path.splitext(image["fileNameWiki"])[FILE_EXT_INDEX].lower()}'
+                        addDistinctValues(fileNameWiki, image, people[wikidataID]['images'])
 
 
 def getMetadataAndLinks(data, chunkSize=50):
-    """This method fetches metadata and links of all images in dataset and adds it back to it
+    """This method finds metadata and links of all images in the passed dataset and saves it back to it.
 
         Keyword arguments:
         data -- processed data from sparql endpoint
-        chunkSize -- number of files that can be processed at once, limited by mediawiki API to 50 (default: 50)
+        chunkSize -- number of files that can be processed at once, limited by mediawiki API
+                     to 50 for standard user or 500 for user with additional rights (default: 50)
     """
+
     toProcess = {}
     length = 0
     for i, person in enumerate(tqdm(data.values(), desc='getMetadataAndLinks', miniters=int(len(data) / 100))):
         for j, image in enumerate(person['images'].values()):
-            if len(toProcess) >= chunkSize or length > constants.MAX_URI_LENGTH:
+            if len(toProcess) >= chunkSize or length > MAX_URI_LENGTH:
                 getMetadataAndLinksForChunk(toProcess, data)
                 length = 0
                 toProcess = {image["fileNameWiki"]: [person['wikidataID']]}
@@ -181,14 +193,16 @@ def getMetadataAndLinks(data, chunkSize=50):
 
 
 def getMetadataAndLinksForChunk(titlesDict, data):
-    """This method fetches metadata and links of images in titlesDict and adds it to the dataset
+    """This method fetches metadata and links of images in titlesDict and saves it to the dataset.
 
         Keyword arguments:
         titlesDict -- dictionary with image file names as keys and wikidataID as values, used for storing the fetched data in correct place
         data -- processed data from sparql endpoint
     """
+
     # example
     # https://commons.wikimedia.org/w/api.php?action=query&prop=pageimages|imageinfo&iiprop=extmetadata&piprop=original&titles=File:Ayn_Rand_(1943_Talbot_portrait).jpg&formatversion=2&format=json
+
     params = {
         'action': 'query',
         'titles': '',
@@ -198,10 +212,11 @@ def getMetadataAndLinksForChunk(titlesDict, data):
         'format': 'json',
         'formatversion': 2
     }
+
     with requests.Session() as session:
         titlesString = f'File:{"|File:".join(list(titlesDict.keys()))}'
         params['titles'] = titlesString
-        r = session.get(url=constants.MWAPI_URL, params=params, headers=constants.HEADERS)
+        r = session.get(url=MWAPI_URL, params=params, headers=HEADERS)
         r.raise_for_status()  # raises exception when not a 2xx response
         pages = r.json()['query']['pages']
 
@@ -209,7 +224,7 @@ def getMetadataAndLinksForChunk(titlesDict, data):
             if 'original' in page:
                 # I also cannot use getLastPartOfURL on this image, because there might be some odd names of files
                 # (e.g., they can contain a ? or ;) which mess up with the method
-                fileName = unquote(page['title'][constants.FILE_TITLE_OFFSET:]).replace(' ', '_')
+                fileName = unquote(page['title'][FILE_TITLE_OFFSET:]).replace(' ', '_')
                 # all dict value is a list instead of a single value so it is easier to use
                 for wikidataID in titlesDict[fileName]:
                     person = data[wikidataID]
@@ -222,17 +237,17 @@ def getMetadataAndLinksForChunk(titlesDict, data):
                     if 'ImageDescription' in metadata:  # pujde to prepsat pomoci addDistinct value?
                         caption = metadata['ImageDescription']['value']
                         caption = BeautifulSoup(caption, features="html.parser").get_text()
-                        utils.addDistinctValues('caption', caption, image)
+                        addDistinctValues('caption', caption, image)
                     if 'DateTimeOriginal' in metadata:
                         date = metadata['DateTimeOriginal']['value']
                         date = BeautifulSoup(date, features="html.parser").get_text()
-                        utils.addDistinctValues('date', date, image)
+                        addDistinctValues('date', date, image)
             else:
                 logging.error(f'picture {page["title"]} from {person["wikidataID"]} does not exist')
 
 
 def getPictures(data, startIndex=None, endIndex=None):
-    """This method downloads all the picture from the dataset,
+    """This method downloads all the pictures from the dataset passed in.
 
         Keyword arguments:
         data -- processed data from sparql endpoint
@@ -255,7 +270,7 @@ def getPictures(data, startIndex=None, endIndex=None):
 
 
 def getPicturesForPerson(person):
-    """This method downloads all the picture for specific person
+    """This method downloads all the pictures for the person passed into the method.
 
         Keyword arguments:
         person --  one person from processed dataset
@@ -267,14 +282,13 @@ def getPicturesForPerson(person):
                 # The check if the image is already in the directory works only if we have the data with
                 # fileNameLocal in them
                 if 'fileNameLocal' not in image or not os.path.isfile(
-                        f'{constants.IMAGES_DIRECTORY}/{image["fileNameLocal"]}'):
+                        f'{IMAGES_DIRECTORY}/{image["fileNameLocal"]}'):
                     if 'url' in image:
-                        # print(f'{person["wikidataID"]} {image["fileNameWiki"]}')
-                        response = session.get(url=image['url'], headers=constants.HEADERS)
+                        response = session.get(url=image['url'], headers=HEADERS)
                         if response.ok:
                             hash = hashlib.sha256(response.content).hexdigest()
                             image["fileNameLocal"] = f"{hash}{image['extension']}"
-                            location = f'{constants.IMAGES_DIRECTORY}/{image["fileNameLocal"]}'
+                            location = f'{IMAGES_DIRECTORY}/{image["fileNameLocal"]}'
                             with open(location, "wb+") as f:
                                 f.write(response.content)
                         else:

@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 import constants
-from create import utils, transformer
+from create.utils import readData, saveData, countProperty, addToDictionary
+from create.transformer import toTrainingPeople, toEvaluationSample
 
 
 def addlabels(x, y):
@@ -147,13 +148,12 @@ def getAllInfo(datasetOnly=False):
     totalPropertiesAllFalse = {}
     step = 1
     for year in tqdm(range(constants.START_YEAR, constants.END_YEAR, step), desc='getAllInfo'):
-        # data = utils.readData(f'{constants.DATA_DIRECTORY}/{year}_{year + step}.json')
-        data = utils.readData(f'{constants.DATA_DIRECTORY}/{year}.json')
+        data = readData(f'{constants.DATA_DIRECTORY}/{year}.json')
         if datasetOnly:
-            data = transformer.toTrainingPeople(data)
-        totalProperties = Counter(totalProperties) + Counter(utils.countProperty(data, propertiesToCount))
+            data = toTrainingPeople(data)
+        totalProperties = Counter(totalProperties) + Counter(countProperty(data, propertiesToCount))
         totalPropertiesAllFalse = Counter(totalPropertiesAllFalse) + Counter(
-            utils.countProperty(data, propertiesToCountAllFalse))
+            countProperty(data, propertiesToCountAllFalse))
 
         for person in data.values():
             countAllForPerson(person, uniqueValuesAll)
@@ -201,9 +201,9 @@ def getAllInfo(datasetOnly=False):
         else:
             plotBarChart(graphData, f'{constants.STATS_DIRECTORY}/{key}.svg', graphsDescriptions[key])
 
-    utils.saveData(allStats, f'{constants.STATS_DIRECTORY}/allStats.json')
-    utils.saveData(totalProperties, f'{constants.STATS_DIRECTORY}/countProperty.json')
-    utils.saveData(totalPropertiesAllFalse, f'{constants.STATS_DIRECTORY}/countPropertyAllFalse.json')
+    saveData(allStats, f'{constants.STATS_DIRECTORY}/allStats.json')
+    saveData(totalProperties, f'{constants.STATS_DIRECTORY}/countProperty.json')
+    saveData(totalPropertiesAllFalse, f'{constants.STATS_DIRECTORY}/countPropertyAllFalse.json')
 
     for key in uniqueValuesAll.keys():
         if key == 'gender':
@@ -239,7 +239,7 @@ def getAllInfo(datasetOnly=False):
         'uniqueValuesAll': uniqueValuesAll,
     }
 
-    utils.saveData(uniqueValues, f'{constants.STATS_DIRECTORY}/uniqueValues.json')
+    saveData(uniqueValues, f'{constants.STATS_DIRECTORY}/uniqueValues.json')
 
 
 def countResolution(image, stats):
@@ -257,7 +257,7 @@ def countAllForPerson(person, stats):
     for key in ['nationality', 'occupation']:
         if key in person:
             for item in person[key]:
-                utils.addToDictionary(item, stats[key]['all'])
+                addToDictionary(item, stats[key]['all'])
                 if 'gender' in person:
                     gender = person['gender']
                     if 'male' in gender and 'female' not in gender:
@@ -265,11 +265,11 @@ def countAllForPerson(person, stats):
                     elif 'female' in gender and 'male' not in gender:
                         gender = 'female'
                     if gender in ['male', 'female']:
-                        utils.addToDictionary(item, stats[key][gender])
+                        addToDictionary(item, stats[key][gender])
 
     if 'gender' in person:
         for item in person['gender']:
-            utils.addToDictionary(item, stats['gender'])
+            addToDictionary(item, stats['gender'])
 
 
 def countGender(person, stats):
@@ -321,8 +321,8 @@ def countUsableImages(image, stats):
 
 
 def countExtensions(image, stats):
-    extension = os.path.splitext(image['fileNameLocal'])[1].lower()
-    # extension = image['extension']
+    # extension = os.path.splitext(image['fileNameLocal'])[1].lower()
+    extension = image['extension']
     if extension in stats:
         stats[extension] += 1
     else:
@@ -331,10 +331,4 @@ def countExtensions(image, stats):
 
 if __name__ == '__main__':
     getAllInfo()
-    # step = 5
-    # for year in tqdm(range(constants.START_YEAR, constants.END_YEAR, step), desc='getAllInfo'):
-    #     data = utils.readData(f'{constants.DATA_DIRECTORY}/{year}_{year + step}.json')
-    #     data = transformer.toTrainingPeople(data)
-    #     data = transformer.toPeopleWithAllProps(data)
-    #     data = transformer.toEvaluationSample(data)
-    #     utils.saveData(data, f'{constants.DATA_DIRECTORY}/{year}_{year + step}_eval.json')
+    # data = toEvaluationSample()

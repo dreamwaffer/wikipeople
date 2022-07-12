@@ -1,8 +1,11 @@
 from __future__ import print_function, division
 
 import json
-from textwrap import wrap
+import time
+import os
+import copy
 
+from textwrap import wrap
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -13,9 +16,8 @@ import torch.backends.cudnn as cudnn
 import numpy as np
 from torchvision import datasets, models, transforms
 import matplotlib.pyplot as plt
-import time
-import os
-import copy
+
+import constants
 
 
 def run(data_dir, eval_dir, resultDirectory, runIndex):
@@ -91,14 +93,16 @@ def run(data_dir, eval_dir, resultDirectory, runIndex):
         plt.clf()
         plt.close()
         x = [item for item in range(1, num_epochs + 1)]
+        plt.figure(figsize=(10, 7))
+        plt.ylabel('Accuracy of model')
+        plt.xlabel('Phase of training')
+        plt.title(
+            f'Accuracy of model throughout the training')
         for index, (phase, values) in enumerate(progress.items()):
-            plt.figure(figsize=(10, 7))
-            plt.plot(x, values, color='green')
-            plt.ylabel('Accuracy of model')
-            plt.xlabel('Phase of training')
-            plt.title(
-                f'Accuracy of model on {"training" if phase == "train" else "validation"} data throughout the training')
-            plt.savefig(f'{resultDirectory}/{runIndex}/acc{index}', dpi=300)
+            label = 'training phase' if phase == 'train' else 'validation phase'
+            plt.plot(x, values, label=label)
+        plt.legend()
+        plt.savefig(f'{resultDirectory}/{runIndex}/acc', dpi=300)
 
         # load best model weights
         model.load_state_dict(best_model_wts)
@@ -125,7 +129,8 @@ def run(data_dir, eval_dir, resultDirectory, runIndex):
                     plt.figure(figsize=(8, 3))
                     out = torchvision.utils.make_grid(inputs.cpu().data,
                                                       out=torchvision.utils.make_grid(inputs.cpu().data))
-                    imsave(out, f'{resultDirectory}/{runIndex}/test{i}.png', real=[class_names[x] for x in labels],
+                    imsave(out, f'{resultDirectory}/{runIndex}/test{i}.png',
+                           real=[class_names[x] for x in labels],
                            predicted=[class_names[x] for x in preds])
 
                 # statistics
@@ -148,12 +153,8 @@ def run(data_dir, eval_dir, resultDirectory, runIndex):
         inp = std * inp + mean
         inp = np.clip(inp, 0, 1)
         plt.imshow(inp)
-        # text = f'Real: {real}\nPredicted: {predicted}'
         plt.figtext(0.5, 0.2, f'Real: {real}', wrap=True, horizontalalignment='center', fontsize=8)
         plt.figtext(0.5, 0.1, f'Pred: {predicted}', wrap=True, horizontalalignment='center', fontsize=8)
-        # for realItem, predItem in zip(real, predicted):
-        #     plt.figtext(0.01, 0.1, realItem)
-        # plt.title(title, fontdict={'fontsize': 8})
         plt.xticks([])
         plt.yticks([])
         plt.pause(0.001)  # pause a bit so that plots are updated
@@ -161,7 +162,7 @@ def run(data_dir, eval_dir, resultDirectory, runIndex):
 
     cudnn.benchmark = True
     BATCH_SIZE = 100
-    NUM_EPOCHS = 30
+    NUM_EPOCHS = 100
     LR = 0.001
 
     # Data augmentation and normalization for training
@@ -198,7 +199,7 @@ def run(data_dir, eval_dir, resultDirectory, runIndex):
     dataloaders = {x: torchDataloader(image_datasets[x],
                                       batch_size=BATCH_SIZE,
                                       shuffle=True,
-                                      num_workers=10)
+                                      num_workers=4)
                    for x in ['train', 'val']}
     dataloaders['test'] = torchDataloader(image_datasets['test'],
                                           batch_size=8,
@@ -219,36 +220,45 @@ def run(data_dir, eval_dir, resultDirectory, runIndex):
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
                            num_epochs=NUM_EPOCHS)
-    torch.save(model_ft.state_dict(), f'{resultDirectory}/{runIndex}/model.pt')
+    if runIndex == 4:
+        torch.save(model_ft.state_dict(), f'{resultDirectory}/{runIndex}/model.pt')
     acc = test_model(model_ft, criterion)
-    return acc
+    return dataset_sizes['train'], acc
 
 
 if __name__ == '__main__':
-    resultDirectory = 'results'
+    if not os.path.exists(constants.RESULTS_DIRECTORY):
+        os.makedirs(constants.RESULTS_DIRECTORY)
 
-    if not os.path.exists(resultDirectory):
-        os.makedirs(resultDirectory)
+    if not os.path.exists(f"{constants.RESULTS_DIRECTORY}/gender"):
+        os.makedirs(f"{constants.RESULTS_DIRECTORY}/gender")
 
     results = []
-    iterationsNum = 11
+    iterationsNum = 5
 
     for i in range(iterationsNum):
         print(f'Starting model {i}')
-        if not os.path.exists(f'{resultDirectory}/{i}'):
-            os.makedirs(f'{resultDirectory}/{i}')
-        results.append(run(f'/datagrid/personal/kotrblu2/1/finalTestDataBig/{i}',
-                           f'/datagrid/personal/kotrblu2/1/finalTestDataBig/eval',
-                           resultDirectory, i))
+        if not os.path.exists(f'{constants.RESULTS_DIRECTORY}/gender/{i}'):
+            os.makedirs(f'{constants.RESULTS_DIRECTORY}/gender/{i}')
+        results.append(run(f'{constants.DATASET_DIRECTORY}/gender/{i}',
+                           f'{constants.DATASET_DIRECTORY}/gender/eval',
+                           f'{constants.RESULTS_DIRECTORY}/gender', i))
 
-    x = [item for item in range(1, iterationsNum + 1)]
     plt.figure(figsize=(10, 7))
-    plt.plot(x, results, color='green')
-    plt.ylabel('Accuracy')
-    plt.xlabel('Number of model')
-    plt.title(
-            f'Accuracy of model in relation to amount of general data in dataset')
-    plt.savefig(f'{resultDirectory}/acc.png', dpi=300)
+    plt.xscale('log')
+    plt.plot(*zip(*results), color='green')
+    plt.scatter(*zip(*results), color='green')
+    for i, (dataLength, error) in enumerate(results):
+        if i == len(results) - 1:
+            plt.annotate(f'{dataLength} images', (dataLength * 0.45, error))
+        else:
+            plt.annotate(f'{dataLength} images', (dataLength * 1.02, error))
 
-    with open(f'{resultDirectory}/results.json', 'w', encoding="UTF-8") as f:
+    plt.ylabel('Accuracy of model [%]')
+    plt.xlabel('Amount of data used for training')
+    plt.title(
+        f'Accuracy of model in relation to amount of data in dataset')
+    plt.savefig(f'{constants.RESULTS_DIRECTORY}/gender/acc.png', dpi=300)
+
+    with open(f'{constants.RESULTS_DIRECTORY}/gender/results.json', 'w', encoding="UTF-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)

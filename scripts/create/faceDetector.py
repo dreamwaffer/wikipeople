@@ -1,11 +1,19 @@
-from tqdm import tqdm
-import constants
+# Module name: FaceDetector
+# Purpose: This module contains functions to detect faces in images.
+
 import logging
 import os
+
+from tqdm import tqdm
 from retinaface import RetinaFace
 
-def detectFacesWithHashing(data, processedImages=None):
-    """This method detects faces in images in dataset. There is a limitation on images' extensions.
+from constants import FACE_BOX_MULTIPLIER, ALLOWED_EXTENSIONS
+
+
+def detectFaces(data, processedImages=None):
+    """This method detects faces in images in the passed dataset. There is a limitation on images' extensions.
+       If processedImages dictionary is passed as well then before detecting faces the image is searched
+       in the dictionary of images that have been already put through face detection.
 
         Keyword arguments:
         data -- processed data from sparql endpoint
@@ -17,15 +25,15 @@ def detectFacesWithHashing(data, processedImages=None):
 
     for index, person in enumerate(
             tqdm(data.values(), desc='detectFaces', miniters=int(len(data) / 100))):
-        # print(person['name'], person['wikidataID'])
         for image in person['images'].values():
             if image['fileNameLocal'] not in processedImages:
-                if image['extension'] in constants.ALLOWED_EXTENSIONS:
+                if image['extension'] in ALLOWED_EXTENSIONS:
                     if 'faces' not in image:
                         try:
                             processedImages[image['fileNameLocal']] = detectFacesInImage(image)
                         except Exception as e:
-                            logging.exception(f'Exception happened in {image["fileNameWiki"]} from {person["wikidataID"]}')
+                            logging.exception(
+                                f'Exception happened in {image["fileNameWiki"]} from {person["wikidataID"]}')
                             # logging.error(e)
                     elif image['fileNameLocal'] not in processedImages:
                         processedImages[image['fileNameLocal']] = image['faces']
@@ -35,51 +43,30 @@ def detectFacesWithHashing(data, processedImages=None):
     return processedImages, data
 
 
-
-
-def detectFaces(data, processedImages=None):
-    """This method detects faces in images in dataset. There is a limitation on images' extensions.
-
-        Keyword arguments:
-        data -- processed data from sparql endpoint
-        processedImages -- dictionary of images that was already processed with face detection (default: None)
-    """
-
-    if processedImages is None:
-        processedImages = {}
-
-    for index, person in enumerate(
-            tqdm(data.values(), desc='detectFaces', miniters=int(len(data) / 100))):
-        for image in person['images'].values():
-            if image['fileNameWiki'] not in processedImages:
-                if os.path.splitext(image["fileNameLocal"])[1] in constants.ALLOWED_EXTENSIONS:
-                    if 'faces' not in image:
-                        logging.info(f'Image {image["fileNameWiki"]} not found in dictionary')
-                        try:
-                            processedImages[image['fileNameWiki']] = detectFacesInImage(image)
-                        except Exception as e:
-                            logging.exception(f'Exception happened in {image["fileNameWiki"]} from {person["wikidataID"]}')
-                            # logging.error(e)
-                    # TODO this next line is duplicate - remove it and make it simpler!
-                    # elif image['fileNameWiki'] not in processedImages:
-                    processedImages[image['fileNameWiki']] = image['faces']
-            else:
-                image['faces'] = processedImages[image['fileNameWiki']]
-
-
-    return processedImages, data
-
-
 def detectFacesInImage(image):
-    """This method detects faces in one specific image.
-       TODO mention what is the structure of box, how box is defined
+    """This method detects faces in one specific image passed into the method. Detected faces are saved
+       directly into the image which is part of the dataset being build. The structore of faces looks
+       like this:
+
+       "faces": [
+          {                              - face 1
+            "score": 0.9997634291648865, - probability of detected face being a real face
+            "box": [                     - bounding box of the detected face
+              296,                       - X coordinate of left top point of box
+              189,                       - Y coordinate of left top point of box
+              707,                       - X coordinate of right bottom point of box
+              600                        - Y coordinate of right bottom point of box
+            ]
+          },
+          {}                             - face 2
+        ]
 
         Keyword arguments:
         image -- image from dataset to find faces in
     """
 
-    location = f'{constants.IMAGES_DIRECTORY}/{image["fileNameLocal"]}'
-    # necessary check, broken images are deleted, so not all people have one donwloaded
+    location = f'{IMAGES_DIRECTORY}/{image["fileNameLocal"]}'
+    # necessary check, broken images are deleted, so not all people have one downloaded
     if os.path.exists(location):
         faces = RetinaFace.detect_faces(location)
         # Retina face returns tuple if no face is found
@@ -90,7 +77,7 @@ def detectFacesInImage(image):
                 x1, y1, x2, y2 = [int(value) for value in face['facial_area']]
                 width = x2 - x1
                 height = y2 - y1
-                longerSide = max(width, height) * constants.FACE_BOX_MULTIPLIER
+                longerSide = max(width, height) * FACE_BOX_MULTIPLIER
                 x = x1 - (longerSide - width) / 2
                 y = y1 - (longerSide - height) / 2
                 box = [x, y, x + longerSide, y + longerSide]
@@ -103,4 +90,3 @@ def detectFacesInImage(image):
             image['faces'] = []
 
     return image['faces']
-

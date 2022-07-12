@@ -25,6 +25,7 @@ cd wikipeople/
 ```
 export PYTHONPATH="${PYTHONPATH}:FullPathToTheScriptsDir"
 ```
+- Before running the processCPU.py check your Pillow version. If it is anything below Pillow 9.1.0, than check line 53 in package create in module transformer.py.
 - Run processCPU.py for creating of database
 ```
 cd scripts/create
