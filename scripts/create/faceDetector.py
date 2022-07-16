@@ -7,7 +7,7 @@ import os
 from tqdm import tqdm
 from retinaface import RetinaFace
 
-from constants import FACE_BOX_MULTIPLIER, ALLOWED_EXTENSIONS
+from constants import FACE_BOX_MULTIPLIER, ALLOWED_EXTENSIONS, IMAGES_DIRECTORY
 
 
 def detectFaces(data, processedImages=None):

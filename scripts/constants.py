@@ -48,7 +48,7 @@ RESULTS_DIRECTORY = '../../results'
 AGE_DB_IMAGES_DIRECTORY = '../../AgeDB/AgeDB'
 
 # DOWNLOAD CONSTANTS
-START_YEAR = 1840
+START_YEAR = 1981
 END_YEAR = 2015
 YEAR_STEP = 1  # changing this is not recommended as it will most likely cause timeout on the API
 MAX_URI_LENGTH = 5000

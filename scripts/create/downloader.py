@@ -243,7 +243,9 @@ def getMetadataAndLinksForChunk(titlesDict, data):
                         date = BeautifulSoup(date, features="html.parser").get_text()
                         addDistinctValues('date', date, image)
             else:
-                logging.error(f'picture {page["title"]} from {person["wikidataID"]} does not exist')
+                imageName= unquote(page['title'][FILE_TITLE_OFFSET:]).replace(' ', '_')
+                auxWikidataID = titlesDict[imageName]
+                logging.error(f'Image {imageName} from {auxWikidataID} does not exist')
 
 
 def getPictures(data, startIndex=None, endIndex=None):

@@ -13,7 +13,7 @@ from create.utils import addDistinctValues, getLastPartOfURL
 from create import merger
 from constants import BROKEN_DATA, PERSON_PROPERTIES_FOR_TRAINING, IMAGE_PROPERTIES_FOR_TRAINING, GENERAL_DATE_OFFSET, \
     WIKIPEDIA_FILE_NAME_OFFSET, FILE_EXT_INDEX, WIKIDATA_ENTITY_OFFSET, BANNED_EXTENSIONS, \
-    PERSON_PROPERTIES_FOR_EVALUATION, IMAGE_PROPERTIES_FOR_EVALUATION
+    PERSON_PROPERTIES_FOR_EVALUATION, IMAGE_PROPERTIES_FOR_EVALUATION, WIKIPEDIA_TITLE_OFFSET
 
 
 def removeBrokenData(data):
@@ -64,7 +64,8 @@ def simplifySparqlData(data):
             if key in ['description', 'name']:
                 simpRec[key] = value['value']
             elif key == 'wikipediaTitle':
-                simpRec[key] = getLastPartOfURL(value['value'])
+                # simpRec[key] = getLastPartOfURL(value['value'])
+                simpRec[key] = value['value'][:WIKIPEDIA_TITLE_OFFSET]
             elif key == 'birthDate' or key == 'deathDate':
                 simpRec[key] = value['value'][:GENERAL_DATE_OFFSET]
             elif key == 'imageUrl':
