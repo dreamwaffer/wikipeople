@@ -1,7 +1,7 @@
 # Module name: DataCollectionProcess
 # Purpose: This module contains main function for creating the dataset.
 
-import os
+import os, logging
 
 from create.ageFinder import addAgeToImages
 from create.corrector import removeBrokenImages
@@ -48,12 +48,13 @@ def fullDataDownload():
         data = mergeListOfValues(data)
         saveData(data, f'{DATA_DIRECTORY}/{year}.json')
 
-        data = getPictures(data)
-        data = removeBrokenImages(data)
+        # data = getPictures(data)
+        # data = removeBrokenImages(data)
 
         data = orderData(data)
         data = changeOrderOfProperties(data)
         saveData(data, f'{DATA_DIRECTORY}/{year}.json')
+        logging.info(f"Year {str(year)} was completed!")
 
 
 if __name__ == '__main__':

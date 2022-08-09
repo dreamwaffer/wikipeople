@@ -81,7 +81,7 @@ def getRawSparqlData(fromYear=None, toYear=None):
                 else:
                     success = True
                 finally:
-                    logging.info("Year " + str(i) + " had " + str(numOfErrors) + " errors.")
+                    logging.info(f"Getting SPARQL data for year {str(i)} produced {str(numOfErrors)} errors!")
 
     return data
 
