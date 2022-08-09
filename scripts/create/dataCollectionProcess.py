@@ -1,4 +1,4 @@
-# Module name: ProcessCPU
+# Module name: DataCollectionProcess
 # Purpose: This module contains main function for creating the dataset.
 
 import os
@@ -8,7 +8,7 @@ from create.corrector import removeBrokenImages
 from create.merger import mergeListOfValues, mergeDatasets
 from create.utils import readData, saveData
 from create.transformer import removeBrokenData, processSparqlData, simplifySparqlData
-from create.setupCPU import config
+from create.dataCollectionSetup import config
 from create.sorter import orderData, changeOrderOfProperties
 from create.labeler import labelTags
 from create.downloader import getRawSparqlData, getThumbnails, getMetadataAndLinks, getPictures
@@ -17,7 +17,7 @@ from constants import START_YEAR, END_YEAR, YEAR_STEP, DATA_DIRECTORY
 
 def fullDataDownload():
     """This method create the database, download all the data and process it.
-       Only the CPU part.
+       This method contains only the CPU part.
 
        Keyword arguments:
         None

@@ -242,7 +242,7 @@ def toEvaluationSample():
        Wikipedia page are filtered out. From those 1000 are pseudorandomly chosen.
 
        Keyword arguments:
-        data -- processed data from sparql endpoint
+        None
     """
 
     data = merger.mergeAllDataForEvaluation()

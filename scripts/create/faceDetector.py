@@ -11,7 +11,7 @@ from constants import FACE_BOX_MULTIPLIER, ALLOWED_EXTENSIONS, IMAGES_DIRECTORY
 
 
 def detectFaces(data, processedImages=None):
-    """This method detects faces in images in the passed dataset. There is a limitation on images' extensions.
+    """This method detects faces in images in the passed dataset. There is a limitation on images extensions.
        If processedImages dictionary is passed as well then before detecting faces the image is searched
        in the dictionary of images that have been already put through face detection.
 
@@ -50,7 +50,7 @@ def detectFacesInImage(image):
 
        "faces": [
           {                              - face 1
-            "score": 0.9997634291648865, - probability of detected face being a real face
+            "score": 0.9997634291648865, - confidence score of face detection process
             "box": [                     - bounding box of the detected face
               296,                       - X coordinate of left top point of box
               189,                       - Y coordinate of left top point of box

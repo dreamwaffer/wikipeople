@@ -45,9 +45,9 @@ def evaluateData(data):
 
 if __name__ == '__main__':
     # data = transformer.toEvaluationSample()
-    data = readData(f'{constants.DATA_DIRECTORY}/eval.json')
-    data = evalAges(data)
-    saveData(data, f'{constants.DATA_DIRECTORY}/eval.json')
+    # data = readData(f'{constants.DATA_DIRECTORY}/eval.json')
+    # data = evalAges(data)
+    # saveData(data, f'{constants.DATA_DIRECTORY}/eval.json')
 
-    # data = utils.readData(f'{constants.DATA_DIRECTORY}/eval.json')
-    # evaluateData(data)
+    data = readData(f'{constants.DATA_DIRECTORY}/eval.json')
+    evaluateData(data)

@@ -1,4 +1,4 @@
-# Module name: SetupCPU
+# Module name: dataCollectionSetup
 # Purpose: This module contains function to set up the environment specific to CPU part of the program.
 
 import warnings

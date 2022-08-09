@@ -1,4 +1,4 @@
-# Module name: SetupGPU
+# Module name: faceDetectionSetup
 # Purpose: This module contains function to set up the environment specific to GPU part of the program.
 
 import tensorflow as tf

@@ -1,6 +1,7 @@
 # Module name: Constants
 # Purpose: This module contains all the constants used in this project.
 
+# CONSTANTS NOT INTENDED TO BE CHANGED
 # OFFSETS
 WIKIPEDIA_TITLE_OFFSET = 30  # base looks like this: https://en.wikipedia.org/wiki/
 GENERAL_DATE_OFFSET = 10  # base looks like this: 1905-08-24T00:00:00Z
@@ -14,9 +15,6 @@ YEAR_OFFSET = 4  # base looks like this: 1900-10-31
 SPARQL_URL = 'https://query.wikidata.org/sparql'
 MWAPI_URL = 'https://en.wikipedia.org/w/api.php'
 WIKIMEDIA_COMMONS_API_URL = 'https://commons.wikimedia.org/w/api.php'
-HEADERS = {
-    "User-Agent": "wikipeople-bot/0.0 (https://github.com/dreamwaffer/wikipeople; kotrblu2@fel.cvut.cz)"
-}
 
 # STRUCTURES
 PERSON_STRUCTURE = ['name', 'description', 'gender', 'birthDate', 'deathDate', 'nationality', 'occupation', 'images',
@@ -38,6 +36,19 @@ ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.jpe', '.png', '.tif', '.tiff', '.webp',
                       '.jp2', '.dib']  # extensions that can undergo face detection
 BANNED_EXTENSIONS = ['.tif', '.tiff', '.webp']  # these extensions cannot be used by Pillow to tranform image
 
+# FACE DETECTION CONSTANTS
+FACE_BOX_MULTIPLIER = 1.5
+FACES_MIN_OCCURENCES = 100
+
+# MODEL TRAINING CONSTANTS
+TRAIN, VAL, TEST = 0.6, 0.2, 0.2
+IMAGES_SIZE = 128
+
+# DOWNLOAD CONSTANTS
+YEAR_STEP = 1  # changing this is not recommended as it will most likely cause timeout on the API
+MAX_URI_LENGTH = 5000
+
+# CONSTANTS INTENDED TO BE CHANGED
 # DIRECTORIES
 IMAGES_DIRECTORY = '../../images'
 DATA_DIRECTORY = '../../data'
@@ -48,15 +59,10 @@ RESULTS_DIRECTORY = '../../results'
 AGE_DB_IMAGES_DIRECTORY = '../../AgeDB/AgeDB'
 
 # DOWNLOAD CONSTANTS
-START_YEAR = 1981
+START_YEAR = 1840
 END_YEAR = 2015
-YEAR_STEP = 1  # changing this is not recommended as it will most likely cause timeout on the API
-MAX_URI_LENGTH = 5000
 
-# FACE DETECTION CONSTANTS
-FACE_BOX_MULTIPLIER = 1.5
-FACES_MIN_OCCURENCES = 100
-
-# MODEL TRAINING CONSTANTS
-TRAIN, VAL, TEST = 0.6, 0.2, 0.2
-IMAGES_SIZE = 128
+# REQUESTS
+HEADERS = {
+    "User-Agent": "wikipeople-bot/0.0 (https://github.com/dreamwaffer/wikipeople; kotrblu2@fel.cvut.cz)"
+}

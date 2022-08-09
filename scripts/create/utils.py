@@ -88,7 +88,7 @@ def countProperty(data, properties={}, verbose=False):
                       True -- add all values from lists
                       False -- only count a number of occurences of property
                       eg: {'images': True} will count number of all images in data, adding the length of the list
-                      in comparison to: {'deathDate': False} will only count number of deathDate is present in data.
+                      in comparison to: {'deathDate': False} will only count number of deathDate presented in data.
                       NOTE: all properties with non-list values are percieved as False
         verbose -- switch between verbose output (True) and nonverbose (False)
     """
@@ -124,9 +124,8 @@ def addToDictionary(item, stats):
        dataset attributes.
 
         Keyword arguments:
-        data -- processed data from sparql endpoint
-        file -- file and location to save data to
-        indent -- number of spaces for nicer formatting of JSON (default: 2)
+        item -- item to be added
+        stats -- dictionary to add item to
     """
 
     if item in stats:

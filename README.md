@@ -27,12 +27,16 @@ export PYTHONPATH="${PYTHONPATH}:FullPathToTheScriptsDir"
 ```
 - Check your Pillow version. If it is anything below Pillow 9.1.0, than check line 53 in package create in module transformer.py.
 - Change your email in constants.HEADER, this header is used in all API calls and with proper header your request will not be banned.
+- Check the directories to save your database in constants.DATA_DIRECTORY and constants.IMAGES_DIRECTORY.
+- Set desired start and end year for the script in constants.START_YEAR and constants.END_YEAR.
 - Run processCPU.py for creating of database
 ```
 cd scripts/create
 python processCPU.py
 ```
-- After processCPU is done run processGPU.py for face detection
+- After processCPU is done download the processedImages.json from this [link](https://drive.google.com/file/d/14cwCIZTupPD0LFlhmlPVCgJvOyUo3FoE/view?usp=sharing). This file contains bounding boxes for faces in images that have already been put through face detection. 
+- Place downloaded JSON file into your constants.DATA_DIRECTORY.
+- Run processGPU.py for face detection (you can omit first two steps in case you are using different face detection settings, but mind that the process will quite likely run much longer).
 ```
 cd scripts/create
 python processGPU.py

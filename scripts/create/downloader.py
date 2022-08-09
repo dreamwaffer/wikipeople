@@ -21,8 +21,8 @@ def getRawSparqlData(fromYear=None, toYear=None):
     """This method gets data about all the people from wikidata between certain years.
 
         Keyword arguments:
-        fromYear -- beginning of the range (default defined in constants module is set 1840)
-        toYear -- end of the range (default defined in constants module is set 2015)
+        fromYear -- beginning of the range (default defined in constants module is set to 1840)
+        toYear -- end of the range (default defined in constants module is set t 2015)
     """
 
     if fromYear is None:
@@ -273,6 +273,8 @@ def getPictures(data, startIndex=None, endIndex=None):
 
 def getPicturesForPerson(person):
     """This method downloads all the pictures for the person passed into the method.
+       Name of the local file representing the image is SHA-256 hash of th image content
+       shortened by the hexdigest() method.
 
         Keyword arguments:
         person --  one person from processed dataset
