@@ -50,7 +50,7 @@ python processCPU.py
 cd scripts/create  
 python processGPU.py  
 ```
-## Debugging of data collection process
+## Debugging the data collection process
 Wikipedia is a live site, which is updated every second, this unfortunately comes with a lot of unexpected errors. These API errors could be treated with some try-catch structure, but one of the main goals of this project was to keep the code as simple and maintainable as possible. So, the adopted approach is just rerunning the script from the year that was not successfully processed. Therefore check the process every now and then and in case you find it crashed do this:
 - go to the logs directory and open errors.log
 - scroll down to see the last year which was successfully processed. It should look something like this:
