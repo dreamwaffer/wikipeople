@@ -4,7 +4,7 @@ This project was part of diploma thesis created in 2021/2022 summer semester on 
   
 This project uses Wikimedia API excessively to access a lot of information. The author is aware of all API Etiquette rules, which are mentioned [here](https://www.mediawiki.org/wiki/API:Etiquette) and tries to follow them, but please notify the author on kotrblu2@fel.cvut.cz if you think the project is doing something it should not.
 ## About the project
-Written thesis with more information can be found [here](TODODspace.link).
+All the information about the created project, how it works, what is the final structure as well as statistics of created datasets can be found in [written thesis](TODODspace.link).
   
 ## How to use this project  
 Only tested with Python 3.10, but everything above Python 3.9 should work. The dictionary union operator (|) is used couple of times.  
