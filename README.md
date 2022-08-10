@@ -50,14 +50,15 @@ python processCPU.py
 cd scripts/create  
 python processGPU.py  
 ```
-## Debugging the data collection process
-Wikipedia is a live site, which is updated every second, this unfortunately comes with a lot of unexpected errors. These API errors could be treated with some try-catch structure, but one of the main goals of this project was to keep the code as simple and maintainable as possible. So, the adopted approach is just rerunning the script from the year that was not successfully processed. Therefore check the process every now and then and in case you find it crashed do this:
+## Debugging of data collection process
+It is important to remember that Wikipedia is a live site, so its data are added and edited every minute. This can be observed for example with this live [tool ](http://listen.hatnote.com/). This constantly changing nature can introduce a lot of unexpected errors. They can be prevented, but the complexity would be much complicated, because of the compounded try-catch clauses. To keep the script simple, solution of these unexpected errors was omitted and the work was focused on script robustness instead. 
+So, the adopted approach is just rerunning the script from the year that was not successfully processed. Therefore check the process every now and then and in case you find it crashed do this:
 - go to the logs directory and open errors.log
 - scroll down to see the last year which was successfully processed. It should look something like this:
 	```
 	2022-08-09 17:54:17.175 INFO dataCollectionProcess - fullDataDownload: Year 1877 was completed!
 	```
-	This means that year 1877 was successfuly processed and something went wrong whils processing the year 1878.
+	This means that year 1877 was successfuly processed and something went wrong whilst processing the year 1878.
 - change the constants.START_YEAR to the year you found in previous step.
 - rerun the dataCollectionProcess.
 
