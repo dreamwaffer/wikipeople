@@ -25,10 +25,20 @@ def addAgeToImages(data):
 
 
 def addAgeToImage(image, person):
-    """This method adds age to image that belongs to certain person,
-       the strategy is to get all years from date, caption and file name then remove those that does not fit
-       into the possible range. Possible range is the range between birth and death date and between 0 and 110
-       exclusively. In the end median is calculated from all the possible data and returned.
+    """This method adds age to image that belongs to certain person.
+       For simplicity only years are used to calculate the age of a person in an image,
+       therefore following description use 'image year' to refer to the date of image creation
+       and 'birth year' to refer to the birth date of a person.
+       Image is annotated with the age of the person found in it.
+       This process is based on very simple heuristic algorithm.
+       Firstly, the script finds the year which is most likely the image year.
+       This is done by gathering all years (four digits in a range from 1800 to 2500)
+       found in date and caption attributes as well as in the image file name.
+       All found years are stored in a list. Then those that do not fit into the possible range
+       are removed. Possible range is defined as a range between birth and death date of a person
+       the image belongs to and between 0 and 110 exclusively.
+       In the end the most common value is found and chosen as the image year.
+       Finally this birth year is subtracted from image year and found value is returned.
        None is returned if there is no value, which can be used.
 
         Keyword arguments:
@@ -68,6 +78,7 @@ def addAgeToImage(image, person):
 
 def findPotentialYears(text):
     """This method finds all potential years in string.
+       Potential years are defined as four digits in a range from 1800 to 2500.
 
         Keyword arguments:
         text -- string to search years in

@@ -17,7 +17,7 @@ from constants import START_YEAR, END_YEAR, YEAR_STEP, DATA_DIRECTORY
 
 def fullDataDownload():
     """This method create the database, download all the data and process it.
-       This method contains only the CPU part.
+       This method contains only the data collection part.
 
        Keyword arguments:
         None
