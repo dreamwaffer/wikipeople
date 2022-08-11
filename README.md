@@ -5,6 +5,19 @@ This project was part of diploma thesis created in 2021/2022 summer semester on 
 This project uses Wikimedia API excessively to access a lot of information. The author is aware of all API Etiquette rules, which are mentioned [here](https://www.mediawiki.org/wiki/API:Etiquette) and tries to follow them, but please notify the author on kotrblu2@fel.cvut.cz if you think the project is doing something it should not.
 ## About the project
 All the information about the created project, how it works, what is the final structure as well as statistics of created datasets can be found in [written thesis](TODODspace.link).
+
+### Structure of the project
+- Directory scripts contains:
+    - module constants.py with definition of all constants used in the dataset creation script.
+    - package create, which contains source code divided into modules, which is capable of building the dataset.
+    - package eval and model are used only for statistical evaluation and include code snippets used for:
+        - generating all the statistics over Wikipeople and Wikifaces datasets.
+        - transforming all images into smaller dimension.
+        - creating dataset Wikifaces, which is used for ML training.
+        - generating sample for manual evaluation.
+        - checking results of face detection.
+- File requierementsCPU.txt contains required modules needed for the data collection part of the dataset creation process.
+- File requierements.txt contains required modules needed for both the data collection part and face detection part of the dataset creation process.
   
 ## How to use this project  
 Only tested with Python 3.10, but everything above Python 3.9 should work. The dictionary union operator (|) is used couple of times.  
