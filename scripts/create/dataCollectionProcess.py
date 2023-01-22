@@ -48,8 +48,8 @@ def fullDataDownload():
         data = mergeListOfValues(data)
         saveData(data, f'{DATA_DIRECTORY}/{year}.json')
 
-        # data = getPictures(data)
-        # data = removeBrokenImages(data)
+        data = getPictures(data)
+        data = removeBrokenImages(data)
 
         data = orderData(data)
         data = changeOrderOfProperties(data)

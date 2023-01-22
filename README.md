@@ -8,7 +8,7 @@ All the information about the created project, how it works, what is the final s
 
 ### Structure of the project
 - Directory scripts contains:
-    - module constants.py with definition of all constants used in the dataset creation script.
+    - module constants.py with definition of all constants used in this project.
     - package create, which contains source code divided into modules, which is capable of building the dataset.
     - package eval and model are used only for statistical evaluation and include code snippets used for:
         - generating all the statistics over Wikipeople and Wikifaces datasets.
@@ -39,7 +39,7 @@ cd wikipeople/
 ```  
 export PYTHONPATH="${PYTHONPATH}:FullPathToTheScriptsDir"  
 ```  
-- Check your Pillow version. If it is anything below Pillow 9.1.0, than check line 53 in module transformer in package create.
+- Check your Pillow version. If it is anything below Pillow 9.1.0, than check line 53 in module corrector in package create.
   - on linux run: 
 	```  
 	pip list | grep "Pillow"
@@ -54,14 +54,14 @@ export PYTHONPATH="${PYTHONPATH}:FullPathToTheScriptsDir"
 - Run dataCollectionProcess for creating of database.
 ```  
 cd scripts/create  
-python processCPU.py  
+python dataCollectionProcess.py  
 ```  
 - After processCPU is done download the processedImages.json from this [link](https://drive.google.com/file/d/14cwCIZTupPD0LFlhmlPVCgJvOyUo3FoE/view?usp=sharing). This file contains bounding boxes for faces in images that have already been put through face detection.   
 - Place downloaded JSON file into your constants.DATA_DIRECTORY.  
 - Run faceDetectionProcess for face detection (you can omit first two steps in case you are using different face detection settings, but mind that the process will quite likely run much longer).  
 ```  
 cd scripts/create  
-python processGPU.py  
+python faceDetectionProcess.py  
 ```
 ## Debugging of data collection process
 It is important to remember that Wikipedia is a live site, so its data are added and edited every minute. This can be observed for example with this live [tool ](http://listen.hatnote.com/). This constantly changing nature can introduce a lot of unexpected errors. They can be prevented, but the complexity would be much complicated, because of the compounded try-catch clauses. To keep the script simple, solution of these unexpected errors was omitted and the work was focused on script robustness instead. 

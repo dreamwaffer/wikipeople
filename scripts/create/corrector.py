@@ -52,8 +52,8 @@ def isImageBroken(location):
             with Image.open(location) as im:
                 # TODO Image.Transpose.FLIP... does not exist prior Pillow 9.1.0, check your version
                 # Otherwise all you pics might get deleted
-                im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)  # Pillow 9.1.0 and above
-                # im.transpose(Image.ROTATE_90) # Anything below Pillow 9.1.0
+                # im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)  # Pillow 9.1.0 and above
+                im.transpose(Image.ROTATE_90) # Anything below Pillow 9.1.0
 
             # Potential test if retina-face is able to open the image.
             im = cv2.imread(location)
