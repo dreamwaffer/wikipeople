@@ -4,7 +4,7 @@ This project was part of diploma thesis created in 2021/2022 summer semester on 
   
 This project uses Wikimedia API excessively to access a lot of information. The author is aware of all API Etiquette rules, which are mentioned [here](https://www.mediawiki.org/wiki/API:Etiquette) and tries to follow them, but please notify the author on kotrblu2@fel.cvut.cz if you think the project is doing something it should not.
 ## About the project
-All the information about the created project, how it works, what is the final structure as well as statistics of created datasets can be found in [written thesis](TODODspace.link).
+All the information about the created project, how it works, what is the final structure as well as statistics of created datasets can be found in [written thesis](https://dspace.cvut.cz/bitstream/handle/10467/103677/F3-DP-2022-Kotrbaty-Lukas-Database_of_personal_web_pages_from_Wikipedia.pdf).
 
 ### Structure of the project
 - Directory scripts contains:
