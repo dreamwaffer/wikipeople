@@ -16,8 +16,8 @@ All the information about the created project, how it works, what is the final s
         - creating dataset Wikifaces, which is used for ML training.
         - generating sample for manual evaluation.
         - checking results of face detection.
-- File requierementsCPU.txt contains required modules needed for the data collection part of the dataset creation process.
-- File requierements.txt contains required modules needed for both the data collection part and face detection part of the dataset creation process.
+- File requirementsCPU.txt contains required modules needed for the data collection part of the dataset creation process.
+- File requirements.txt contains required modules needed for both the data collection part and face detection part of the dataset creation process.
   
 ## How to use this project  
 Only tested with Python 3.10, but everything above Python 3.9 should work. The dictionary union operator (|) is used couple of times.  
